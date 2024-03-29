@@ -42,11 +42,11 @@ def build_weather_station_name_list():
     Grabs the weather station names from example data provided in repo and dedups
     """
     station_names = []
-    with open('../../../data/weather_stations.csv', 'r') as file:
+    with open('../../../data/weather_stations.csv', 'r', encoding='utf-8') as file:
         file_contents = file.read()
     for station in file_contents.splitlines():
         if "#" in station:
-            next
+            continue  # Use continue instead of next to skip to the next iteration
         else:
             station_names.append(station.split(';')[0])
     return list(set(station_names))
@@ -111,7 +111,7 @@ def build_test_data(weather_station_names, num_rows_to_create):
     print('Building test data...')
 
     try:
-        with open("../../../data/measurements.txt", 'w') as file:
+        with open("../../../data/measurements.txt", 'w', encoding='utf-8') as file:
             progress = 0
             for chunk in range(chunks):
                 
