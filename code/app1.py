@@ -1,6 +1,7 @@
 import time
 from typing import Dict, Callable
 from functools import wraps
+import mmap
 
 def timer_decorator(func: Callable) -> Callable:
     @wraps(func)
@@ -12,31 +13,31 @@ def timer_decorator(func: Callable) -> Callable:
         return result
     return wrapper
 
+
 @timer_decorator
 def calculate_stats(file):
-    stats : Dict[str, Dict[str, float]] = {}
+    stats: Dict[str, List[float]] = {}
   
-    with open(file, "r", encoding='utf8') as f:
-        for row in f:
-            city, temp_str = row.strip().split(";")
+    with open(file, "rb") as f:
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        for line in iter(mm.readline, b''):
+            city, temp_str = line.decode('utf-8').strip().split(';')
             temp = float(temp_str)
             if city in stats:
-                stats[city]["count"] += 1
-                stats[city]["total"] += temp
-                stats[city]["min"] = min(stats[city]["min"], temp)
-                stats[city]["max"] = max(stats[city]["max"], temp)
+                stats[city][0] += 1
+                stats[city][1] += temp
+                stats[city][2] = min(stats[city][2], temp)
+                stats[city][3] = max(stats[city][3], temp)
             else:
-                stats[city] = {"count": 1, "total": temp, "min": temp, "max": temp}
+                stats[city] = [1, temp, temp, temp]
 
     return stats
 
 @timer_decorator
 def print_stats(stats):
     formatted = ', '.join(
-        [
-            f"{k} = {v['min']}/ {v['total']/v['count']}/ {v['max']}"
-            for k, v in sorted(stats.items(), key=lambda x: x[0])
-        ]
+        f"{k} = {v[2]}/ {v[1]/v[0]:.2f}/ {v[3]}"
+        for k, v in sorted(stats.items())
     )
     print("{" + formatted + "}")
 

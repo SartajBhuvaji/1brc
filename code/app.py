@@ -1,3 +1,17 @@
+import time
+from typing import Dict, Callable
+from functools import wraps
+
+def timer_decorator(func: Callable) -> Callable:
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"{func.__name__} executed in {end_time - start_time:.4f} seconds")
+        return result
+    return wrapper
+
 def calculate_stats(file):
     stats : Dict[str, Dict[str, float]] = {}
   
@@ -15,6 +29,7 @@ def calculate_stats(file):
 
     return stats
 
+@timer_decorator
 def print_stats(stats):
     formatted = ', '.join(
         [
